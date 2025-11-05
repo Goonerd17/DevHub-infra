@@ -1,0 +1,23 @@
+Vagrant.configure("2") do |config|
+  # 사용할 베이스 박스 (Ubuntu 20.04)
+  config.vm.box = "ubuntu/jammy64"
+
+  # VM 이름 및 호스트네임
+  config.vm.hostname = "devhub-ubuntu"
+
+  # 네트워크 설정 (호스트 ↔ VM 간 통신용)
+  config.vm.network "private_network", ip: "192.168.56.10"
+
+  # 포트 포워딩 예시 (필요 시)
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # VirtualBox 리소스 설정
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "devhub"
+    vb.memory = 2048
+    vb.cpus = 2
+  end
+
+  # 프로비저닝 스크립트 연결 (초기화)
+  config.vm.provision "shell", path: "scripts/init.sh"
+end

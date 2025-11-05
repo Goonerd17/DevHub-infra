@@ -1,23 +1,34 @@
-Vagrant.configure("2") do |config|
-  # 사용할 베이스 박스 (Ubuntu 20.04)
-  config.vm.box = "ubuntu/jammy64"
+VAGRANTFILE_API_VERSION = "2"
 
-  # VM 이름 및 호스트네임
-  config.vm.hostname = "devhub-ubuntu"
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # VM 이름 정의
+  config.vm.define "devhub" do |devhub|
+    # 기본 VM 설정
+    devhub.vm.box = "ubuntu/jammy64"
+    devhub.vm.hostname = "devhub"
 
-  # 네트워크 설정 (호스트 ↔ VM 간 통신용)
-  config.vm.network "private_network", ip: "192.168.56.10"
+    # 네트워크 설정
+    devhub.vm.network "private_network", ip: "192.168.56.10"
 
-  # 포트 포워딩 예시 (필요 시)
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+    # VirtualBox 리소스 설정
+    devhub.vm.provider "virtualbox" do |vb|
+      vb.name = "devhub-vm"
+      vb.cpus = 2
+      vb.memory = 4096
+      vb.gui = false
+    end
 
-  # VirtualBox 리소스 설정
-  config.vm.provider "virtualbox" do |vb|
-    vb.name = "devhub"
-    vb.memory = 2048
-    vb.cpus = 2
+    # VM 초기화 스크립트 (init.sh)
+    devhub.vm.provision "shell", path: "scripts/init.sh"
+
+    # Ansible Local 프로비저닝
+    devhub.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "/vagrant/ansible/playbook.yml"
+      ansible.compatibility_mode = "2.0"
+      ansible.verbose = "v"
+    end
+
+    # Ansible 폴더 동기화
+    devhub.vm.synced_folder "../ansible", "/vagrant/ansible"
   end
-
-  # 프로비저닝 스크립트 연결 (초기화)
-  config.vm.provision "shell", path: "scripts/init.sh"
 end

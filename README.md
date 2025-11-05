@@ -13,28 +13,6 @@
 
 ---
 
-## 프로젝트 구조
-
-```
-
-DevHub-infra/
-├─ vagrant/             # Vagrantfile 관리
-├─ ansible/             # Ansible playbook 및 roles
-│  ├─ playbook.yml
-│  ├─ inventory.ini
-│  └─ roles/
-│     ├─ common/
-│     │  └─ tasks/main.yml
-│     ├─ docker/
-│     ├─ jenkins/
-│     ├─ minikube/
-│     └─ argocd/
-└─ README.md
-
-````
-
----
-
 ## Vagrantfile 설명
 
 - **VM 기본 설정**

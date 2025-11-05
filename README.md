@@ -1,10 +1,5 @@
 # DevHub-infra
 
-좋아요 😎
-그럼 지금까지 내용에 **Vagrant + Ansible 실행 흐름 그림**과 **Host vs Guest provisioning 비교 그림**까지 포함한 시각적 README를 만들어볼게요.
-
----
-
 ```markdown
 # DevHub Infra Environment Setup
 

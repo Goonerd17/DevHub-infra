@@ -156,5 +156,3 @@ vagrant destroy -f
 * 호스트와 VM 간 동기화된 폴더(`/vagrant/ansible`)를 통해 playbook 실행
 * 향후 필요시 Vagrantfile에서 VM 이름에 버전 번호 추가하여 충돌 방지 가능
 
-```
-

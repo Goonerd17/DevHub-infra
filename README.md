@@ -3,8 +3,8 @@
 ```markdown
 # DevHub Infra Environment Setup
 
-이 프로젝트는 Vagrant와 Ansible을 사용하여 **로컬 VM 환경에서 개발 및 테스트 환경을 자동으로 구축**하는 예제입니다.  
-주요 목표는 **VM 생성 → Ansible 설치 → Docker, Jenkins, Minikube, ArgoCD 환경 세팅**까지 자동화하는 것입니다.
+이 프로젝트는 Vagrant와 Ansible을 사용하여 로컬 VM 환경에서 개발 및 테스트 환경을 자동으로 구축하는 예제입니다.  
+주요 목표는 VM 생성 → Ansible 설치 → Docker, Jenkins, Minikube, ArgoCD 환경 세팅까지 자동화하는 것입니다.
 
 ---
 

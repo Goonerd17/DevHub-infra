@@ -15,27 +15,11 @@ minikube start
 echo "Enabling Ingress Controller..."
 minikube addons enable ingress
 
-# 상태 확인
 echo "Checking Ingress Controller pods..."
 kubectl get pods -n ingress-nginx
 
 # ===============================
-# 2️⃣ Docker Hub에 이미지 빌드 및 푸시
-# ===============================
-echo "Building and pushing backend..."
-cd /c/DevHub-backend
-docker build -t devhub-backend:latest .
-docker tag devhub-backend:latest $DOCKERHUB_ID/devhub-backend:latest
-docker push $DOCKERHUB_ID/devhub-backend:latest
-
-echo "Building and pushing frontend..."
-cd /c/DevHub-Frontend
-docker build -t devhub-frontend:latest .
-docker tag devhub-frontend:latest $DOCKERHUB_ID/devhub-frontend:latest
-docker push $DOCKERHUB_ID/devhub-frontend:latest
-
-# ===============================
-# 3️⃣ K8s 리소스 적용 (통합 네임스페이스)
+# 2️⃣ K8s 리소스 적용 (이미 빌드된 이미지 사용)
 # ===============================
 cd /c/DevHub-infra/infra/k8s
 
@@ -54,7 +38,7 @@ echo "Applying Ingress..."
 kubectl apply -f ingress/devhub-ingress.yml
 
 # ===============================
-# 4️⃣ 배포 상태 확인
+# 3️⃣ 배포 상태 확인
 # ===============================
 sleep 5
 
@@ -68,7 +52,7 @@ echo "Ingress in devhub-frontend namespace:"
 kubectl get ingress -n devhub-frontend
 
 # ===============================
-# 5️⃣ Minikube Ingress 접속 안내
+# 4️⃣ Minikube Ingress 접속 안내
 # ===============================
 echo "✅ Deployment complete!"
 echo "To access devhub.local from your browser:"

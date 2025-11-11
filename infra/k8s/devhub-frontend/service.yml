@@ -10,3 +10,12 @@ spec:
   ports:
     - port: 80
       targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devhub-backend
+  namespace: devhub-frontend
+spec:
+  type: ExternalName
+  externalName: devhub-backend.devhub-backend.svc.cluster.local

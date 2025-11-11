@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-DOCKERHUB_ID=goonerd
-
 # ===============================
 # 1️⃣ Minikube 시작
 # ===============================
@@ -20,22 +18,7 @@ echo "Checking Ingress Controller pods..."
 kubectl get pods -n ingress-nginx
 
 # ===============================
-# 2️⃣ Docker Hub에 이미지 빌드 및 푸시
-# ===============================
-echo "Building and pushing backend..."
-cd /c/DevHub-backend
-docker build -t devhub-backend:latest .
-docker tag devhub-backend:latest $DOCKERHUB_ID/devhub-backend:latest
-docker push $DOCKERHUB_ID/devhub-backend:latest
-
-echo "Building and pushing frontend..."
-cd /c/DevHub-Frontend
-docker build -t devhub-frontend:latest .
-docker tag devhub-frontend:latest $DOCKERHUB_ID/devhub-frontend:latest
-docker push $DOCKERHUB_ID/devhub-frontend:latest
-
-# ===============================
-# 3️⃣ K8s 리소스 적용 (통합 네임스페이스)
+# 2️⃣ K8s 리소스 적용 (통합 네임스페이스)
 # ===============================
 cd /c/DevHub-infra/infra/k8s
 
@@ -57,12 +40,16 @@ echo "Applying Frontend resources..."
 kubectl apply -f devhub-frontend/deployment.yml
 kubectl apply -f devhub-frontend/service.yml
 
+# 5️⃣ Ingress 적용 전 준비 대기
+echo "Waiting for Ingress Controller to be ready..."
+kubectl -n ingress-nginx wait --for=condition=Ready pod -l app.kubernetes.io/component=controller --timeout=120s
+
 # 5️⃣ Ingress 적용
 echo "Applying Ingress..."
 kubectl apply -f ingress/devhub-ingress.yml
 
 # ===============================
-# 4️⃣ 배포 상태 확인
+# 3️⃣ 배포 상태 확인
 # ===============================
 sleep 5
 
@@ -76,7 +63,7 @@ echo "Ingress in devhub-frontend namespace:"
 kubectl get ingress -n devhub-frontend
 
 # ===============================
-# 5️⃣ Minikube Ingress 접속 안내
+# 4️⃣ Minikube Ingress 접속 안내
 # ===============================
 echo "✅ Deployment complete!"
 echo "To access devhub.local from your browser:"

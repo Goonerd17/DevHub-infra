@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: devhub-backend
-  namespace: devhub-frontend
+  namespace: devhub-backend
 spec:
   selector:
     app: devhub-backend

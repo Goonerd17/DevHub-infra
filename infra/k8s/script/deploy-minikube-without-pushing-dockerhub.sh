@@ -5,17 +5,16 @@ set -e
 # 1️⃣ Minikube 시작
 # ===============================
 echo "Starting Minikube..."
-minikube start
+minikube start --driver=docker --cpus=4 --memory=4096
 
-# ===============================
-# 1-1️⃣ Ingress Controller 활성화
-# ===============================
-echo "Enabling Ingress Controller..."
-minikube addons enable ingress
+minikube image load registry.k8s.io/ingress-nginx/controller:v1.13.2
+minikube image load registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.6.2
 
-# 상태 확인
-echo "Checking Ingress Controller pods..."
-kubectl get pods -n ingress-nginx
+echo "Enabling ingress..."
+minikube addons enable ingress || true
+
+echo "Waiting for ingress controller to be ready..."
+kubectl -n ingress-nginx wait --for=condition=Ready pod -l app.kubernetes.io/component=controller --timeout=180s
 
 # ===============================
 # 2️⃣ K8s 리소스 적용 (통합 네임스페이스)
@@ -39,10 +38,6 @@ kubectl apply -f devhub-frontend/namespace.yml
 echo "Applying Frontend resources..."
 kubectl apply -f devhub-frontend/deployment.yml
 kubectl apply -f devhub-frontend/service.yml
-
-# 5️⃣ Ingress 적용 전 준비 대기
-echo "Waiting for Ingress Controller to be ready..."
-kubectl -n ingress-nginx wait --for=condition=Ready pod -l app.kubernetes.io/component=controller --timeout=120s
 
 # 5️⃣ Ingress 적용
 echo "Applying Ingress..."

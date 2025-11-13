@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: goonerd/devhub-front:devhub-front-20251113-40
+          image: goonerd/devhub-front:devhub-front-20251113-41
           ports:
             - containerPort: 80
           env:

@@ -8,3 +8,4 @@
 /dataSources.local.xml
 infra/vagrant/.vagrant/
 infra/k8s/script/
+script/

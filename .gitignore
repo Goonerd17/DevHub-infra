@@ -1,0 +1,3 @@
+/script/cicd.sh
+/script/deploy-minikube.sh
+/script/deploy-minikube-without-pushing-dockerhub.sh

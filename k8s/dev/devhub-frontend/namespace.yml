@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: devhub-frontend.dev-ns
+  name: devhub-frontend-dev

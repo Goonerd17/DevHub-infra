@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: devhub-frontend
-  namespace: devhub-frontend.dev-ns
+  namespace: devhub-frontend-dev
 spec:
   replicas: 1
   selector:
@@ -20,4 +20,4 @@ spec:
             - containerPort: 80
           env:
             - name: API_BASE
-              value: http://devhub-backend.devhub-backend.dev-ns.svc.cluster.local:8080/v1
+              value: http://devhub-backend.devhub-backend-dev.svc.cluster.local:8080/v1

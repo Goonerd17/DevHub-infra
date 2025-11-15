@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: devhub-backend
-          image: goonerd/devhub-backend-dev:devhub-backend-20251115-57
+          image: goonerd/devhub-backend-dev:devhub-backend-20251115-58
           ports:
             - containerPort: 8080

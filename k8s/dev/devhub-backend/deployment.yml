@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devhub-backend
+  namespace: devhub-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devhub-backend
+  template:
+    metadata:
+      labels:
+        app: devhub-backend
+    spec:
+      containers:
+        - name: devhub-backend
+          image: goonerd/devhub-backend:devhub-backend-20251113-39
+          ports:
+            - containerPort: 8080

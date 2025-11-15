@@ -1,14 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: devhub-ingress
-  namespace: devhub-frontend
+  name: devhub-ingress-dev
+  namespace: devhub-frontend-dev
 spec:
   rules:
     - host: devhub.local
       http:
         paths:
-          # 백엔드 API
           - path: /v1
             pathType: Prefix
             backend:
@@ -16,7 +15,6 @@ spec:
                 name: devhub-backend
                 port:
                   number: 8080
-          # 프론트 SPA
           - path: /
             pathType: Prefix
             backend:

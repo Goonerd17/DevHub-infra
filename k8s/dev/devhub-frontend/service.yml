@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: devhub-frontend
-  namespace: devhub-frontend
+  namespace: devhub-frontend.dev-ns
 spec:
   type: ClusterIP
   selector:
@@ -15,7 +15,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: devhub-backend
-  namespace: devhub-frontend
+  namespace: devhub-frontend.dev-ns
 spec:
   type: ExternalName
-  externalName: devhub-backend.devhub-backend.svc.cluster.local
+  externalName: devhub-backend.devhub-backend.dev-ns.svc.cluster.local

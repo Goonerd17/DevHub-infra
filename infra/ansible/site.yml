@@ -1,0 +1,17 @@
+- hosts: kube_nodes
+  become: yes
+  roles:
+    - common
+
+- hosts: master
+  become: yes
+  roles:
+    - kubernetes-master
+    - argocd
+
+- hosts: worker
+  become: yes
+  roles:
+    - kubernetes-worker
+    - jenkins
+    - monitoring

@@ -1,31 +1,37 @@
-- name: Update apt cache
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Upgrade all packages
-  apt:
-    upgrade: dist
-    autoremove: yes
-    autoclean: yes
-
-- name: Install base utilities
+---
+- name: Install dependencies
   apt:
     name:
+      - apt-transport-https
       - curl
-      - vim
-      - git
-      - unzip
-      - net-tools
-      - python3
-      - python3-pip
+      - ca-certificates
+      - software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Disable swap
+  command: swapoff -a
+
+- name: Remove swap entry in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^.*swap.*$'
+    replace: '# swap disabled by Ansible'
+
+- name: Add Kubernetes APT key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
 
-- name: Set timezone to Asia/Seoul
-  timezone:
-    name: Asia/Seoul
+- name: Add Kubernetes apt repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
 
-- name: Ensure locale is UTF-8
-  command: locale-gen "en_US.UTF-8"
-  args:
-    creates: /usr/lib/locale/en_US.utf8
+- name: Install Kubernetes components
+  apt:
+    name:
+      - kubeadm
+      - kubelet
+      - kubectl
+    state: present
+    update_cache: yes

@@ -1,34 +1,42 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  # VM 이름 정의
-  config.vm.define "devhub" do |devhub|
-    # 기본 VM 설정
-    devhub.vm.box = "ubuntu/jammy64"
-    devhub.vm.hostname = "devhub"
+  # 공통 설정
+  config.vm.box = "ubuntu/jammy64"
 
-    # 네트워크 설정
-    devhub.vm.network "private_network", ip: "192.168.56.10"
+  # -------------------------
+  # Master Node
+  # -------------------------
+  config.vm.define "devhub-masternode01" do |master|
+    master.vm.hostname = "devhub-masternode01"
+    master.vm.network "private_network", ip: "192.168.56.11"
 
-    # VirtualBox 리소스 설정
-    devhub.vm.provider "virtualbox" do |vb|
-      vb.name = "devhub-vm"
+    master.vm.provider "virtualbox" do |vb|
+      vb.name = "devhub-masternode01"
       vb.cpus = 2
       vb.memory = 4096
       vb.gui = false
     end
 
-    # VM 초기화 스크립트 (init.sh)
-    devhub.vm.provision "shell", path: "scripts/init.sh"
+    # 초기 스크립트 (선택 사항)
+    # master.vm.provision "shell", path: "scripts/master-init.sh"
+  end
 
-    # Ansible Local 프로비저닝
-    devhub.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "/vagrant/ansible/playbook.yml"
-      ansible.compatibility_mode = "2.0"
-      ansible.verbose = "v"
+  # -------------------------
+  # Worker Node
+  # -------------------------
+  config.vm.define "devhub-workernode01" do |worker|
+    worker.vm.hostname = "devhub-workernode01"
+    worker.vm.network "private_network", ip: "192.168.56.12"
+
+    worker.vm.provider "virtualbox" do |vb|
+      vb.name = "devhub-workernode01"
+      vb.cpus = 2
+      vb.memory = 3072
+      vb.gui = false
     end
 
-    # Ansible 폴더 동기화
-    devhub.vm.synced_folder "../ansible", "/vagrant/ansible"
+    # 초기 스크립트 (선택 사항)
+    # worker.vm.provision "shell", path: "scripts/worker-init.sh"
   end
 end

@@ -1,10 +1,6 @@
 ---
-- name: Install ArgoCD
-  become_user: vagrant
-  command: kubectl apply -n kube-system -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-- name: Patch ArgoCD server to NodePort
-  become_user: vagrant
-  shell: |
-    kubectl -n kube-system patch svc argocd-server \
-      -p '{"spec": {"type": "NodePort"}}'
+- name: ArgoCD CLI 설치
+  get_url:
+    url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+    dest: /usr/local/bin/argocd
+    mode: '0755'

@@ -1,48 +1,34 @@
-Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
+VAGRANTFILE_API_VERSION = "2"
 
-  # 공통 설정
-  config.vm.provider "virtualbox" do |vb|
-    vb.cpus = 2
-    vb.memory = 4096
-    vb.gui = false
-  end
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # VM 이름 정의
+  config.vm.define "devhub" do |devhub|
+    # 기본 VM 설정
+    devhub.vm.box = "ubuntu/jammy64"
+    devhub.vm.hostname = "devhub"
 
-  # ───────────────────────
-  # Master 노드
-  # ───────────────────────
-  config.vm.define "k8s-master" do |master|
-    master.vm.hostname = "k8s-master"
-    master.vm.network "private_network", ip: "192.168.56.10"
+    # 네트워크 설정
+    devhub.vm.network "private_network", ip: "192.168.56.10"
 
-    master.vm.provision "shell", path: "scripts/init.sh"
+    # VirtualBox 리소스 설정
+    devhub.vm.provider "virtualbox" do |vb|
+      vb.name = "devhub-vm"
+      vb.cpus = 2
+      vb.memory = 4096
+      vb.gui = false
+    end
 
-    master.vm.synced_folder "./ansible", "/vagrant/ansible"
+    # VM 초기화 스크립트 (init.sh)
+    devhub.vm.provision "shell", path: "scripts/init.sh"
 
-    master.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "/vagrant/ansible/playbook-master.yml"
-      ansible.inventory_path = "/vagrant/ansible/inventory/hosts.ini"
+    # Ansible Local 프로비저닝
+    devhub.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "/vagrant/ansible/playbook.yml"
       ansible.compatibility_mode = "2.0"
       ansible.verbose = "v"
     end
-  end
 
-  # ───────────────────────
-  # Worker 노드
-  # ───────────────────────
-  config.vm.define "k8s-worker" do |worker|
-    worker.vm.hostname = "k8s-worker"
-    worker.vm.network "private_network", ip: "192.168.56.11"
-
-    worker.vm.provision "shell", path: "scripts/init.sh"
-
-    worker.vm.synced_folder "./ansible", "/vagrant/ansible"
-
-    worker.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "/vagrant/ansible/playbook-worker.yml"
-      ansible.inventory_path = "/vagrant/ansible/inventory/hosts.ini"
-      ansible.compatibility_mode = "2.0"
-      ansible.verbose = "v"
-    end
+    # Ansible 폴더 동기화
+    devhub.vm.synced_folder "../ansible", "/vagrant/ansible"
   end
 end

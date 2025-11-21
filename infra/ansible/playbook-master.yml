@@ -1,8 +1,0 @@
-- hosts: master
-  become: yes
-  roles:
-    - common
-    - master
-    - argocd
-    - jenkins
-    - monitor

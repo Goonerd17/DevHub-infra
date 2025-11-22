@@ -1,0 +1,10 @@
+---
+- name: Copy join script from master
+  ansible.builtin.fetch:
+    src: /tmp/kubeadm_join.sh
+    dest: /tmp/kubeadm_join.sh
+    flat: yes
+  delegate_to: devhub-masternode01
+
+- name: Run kubeadm join on worker
+  ansible.builtin.command: bash /tmp/kubeadm_join.sh

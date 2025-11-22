@@ -1,6 +1,12 @@
 ---
-- name: ArgoCD CLI 설치
-  get_url:
-    url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    dest: /usr/local/bin/argocd
-    mode: '0755'
+- name: Create ArgoCD namespace
+  ansible.builtin.command: kubectl create ns argocd
+  args:
+    warn: false
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Install ArgoCD
+  ansible.builtin.command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf

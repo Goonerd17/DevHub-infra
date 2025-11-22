@@ -1,0 +1,19 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - common
+    - container_runtime
+    - kubernetes_packages
+
+- hosts: devhub-masternode01
+  become: yes
+  roles:
+    - kubernetes_init
+    - argocd
+    - monitoring
+
+- hosts: devhub-workernode01
+  become: yes
+  roles:
+    - kubernetes_join

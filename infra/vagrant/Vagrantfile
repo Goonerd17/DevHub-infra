@@ -1,42 +1,23 @@
-VAGRANTFILE_API_VERSION = "2"
-
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  # 공통 설정
+Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/jammy64"
 
-  # -------------------------
-  # Master Node
-  # -------------------------
+  # master VM
   config.vm.define "devhub-masternode01" do |master|
     master.vm.hostname = "devhub-masternode01"
-    master.vm.network "private_network", ip: "192.168.56.11"
-
+    master.vm.network "private_network", ip: "192.168.56.10"
     master.vm.provider "virtualbox" do |vb|
-      vb.name = "devhub-masternode01"
+      vb.memory = "3096"
       vb.cpus = 2
-      vb.memory = 4096
-      vb.gui = false
     end
-
-    # 초기 스크립트 (선택 사항)
-    # master.vm.provision "shell", path: "scripts/master-init.sh"
   end
 
-  # -------------------------
-  # Worker Node
-  # -------------------------
+  # worker VM
   config.vm.define "devhub-workernode01" do |worker|
     worker.vm.hostname = "devhub-workernode01"
-    worker.vm.network "private_network", ip: "192.168.56.12"
-
+    worker.vm.network "private_network", ip: "192.168.56.11"
     worker.vm.provider "virtualbox" do |vb|
-      vb.name = "devhub-workernode01"
+      vb.memory = "3096"
       vb.cpus = 2
-      vb.memory = 3072
-      vb.gui = false
     end
-
-    # 초기 스크립트 (선택 사항)
-    # worker.vm.provision "shell", path: "scripts/worker-init.sh"
   end
 end

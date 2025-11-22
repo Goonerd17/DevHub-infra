@@ -1,0 +1,27 @@
+---
+- name: Initialize Kubernetes master
+  ansible.builtin.command: kubeadm init --pod-network-cidr=192.168.0.0/16
+  args:
+    creates: /etc/kubernetes/admin.conf
+  register: kubeadm_init
+
+- name: Save join command template
+  ansible.builtin.template:
+    src: kubeadm_join.sh.j2
+    dest: /tmp/kubeadm_join.sh
+    mode: '0755'
+  vars:
+    kubeadm_init_command: "{{ kubeadm_init.stdout_lines | select('search','kubeadm join') | list | first }}"
+
+- name: Copy kubeconfig for vagrant user
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/vagrant/.kube/config
+    owner: vagrant
+    group: vagrant
+    remote_src: yes
+
+- name: Install Calico CNI
+  ansible.builtin.command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf

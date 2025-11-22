@@ -1,0 +1,13 @@
+---
+- name: Add Helm repo
+  ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+- name: Update Helm repos
+  ansible.builtin.command: helm repo update
+
+- name: Install kube-prometheus-stack
+  ansible.builtin.command: >
+    helm install monitoring prometheus-community/kube-prometheus-stack
+    --namespace monitoring --create-namespace
+  args:
+    creates: /tmp/monitoring_installed

@@ -9,6 +9,25 @@
     regexp: '^\s*(.+\s+swap\s+.+)$'
     replace: '# \1'
 
+- name: Remove old Kubernetes repositories at common stage
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/kubernetes.list
+    - /etc/apt/sources.list.d/k8s.list
+    - /etc/apt/sources.list.d/kubernetes-stable.list
+    - /etc/apt/sources.list.d/isv:kubernetes.list
+    - /etc/apt/sources.list.d/kubernetes.sources
+
+- name: Remove old Kubernetes keyrings at common stage
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/keyrings/kubernetes.gpg
+    - /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
 - name: Install common packages
   ansible.builtin.apt:
     name:

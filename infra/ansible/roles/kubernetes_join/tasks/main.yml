@@ -5,6 +5,13 @@
     dest: /tmp/kubeadm_join.sh
     flat: yes
   delegate_to: devhub-masternode01
+  ignore_errors: yes  # master에 스크립트 없으면 에러 무시
+
+- name: Check if join script exists
+  ansible.builtin.stat:
+    path: /tmp/kubeadm_join.sh
+  register: join_script
 
 - name: Run kubeadm join on worker
   ansible.builtin.command: bash /tmp/kubeadm_join.sh
+  when: join_script.stat.exists

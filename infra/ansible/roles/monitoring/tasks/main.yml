@@ -1,10 +1,36 @@
 ---
-- name: Add Helm repo
-  ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# 0. Install Helm
+- name: Download Helm
+  ansible.builtin.get_url:
+    url: https://get.helm.sh/helm-v3.17.0-linux-amd64.tar.gz
+    dest: /tmp/helm.tar.gz
+    mode: '0644'
 
+- name: Extract Helm
+  ansible.builtin.unarchive:
+    src: /tmp/helm.tar.gz
+    dest: /usr/local/bin/
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  args:
+    creates: /usr/local/bin/helm
+
+- name: Ensure helm is executable
+  ansible.builtin.file:
+    path: /usr/local/bin/helm
+    mode: '0755'
+
+# 1. Add Helm repo
+- name: Add Prometheus Helm repo
+  ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  args:
+    creates: /tmp/prometheus_repo_added
+
+# 2. Update Helm repos
 - name: Update Helm repos
   ansible.builtin.command: helm repo update
 
+# 3. Install kube-prometheus-stack
 - name: Install kube-prometheus-stack
   ansible.builtin.command: >
     helm install monitoring prometheus-community/kube-prometheus-stack

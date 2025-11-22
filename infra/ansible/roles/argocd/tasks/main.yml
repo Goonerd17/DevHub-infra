@@ -1,12 +1,21 @@
 ---
+# 1. Ensure kubeconfig exists
+- name: Check if kubeconfig exists
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeconfig
+
+# 2. Create ArgoCD namespace (only if kubeconfig exists)
 - name: Create ArgoCD namespace
   ansible.builtin.command: kubectl create ns argocd
-  args:
-    warn: false
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
+  when: kubeconfig.stat.exists
+  ignore_errors: yes  # 이미 존재하면 무시
 
+# 3. Install ArgoCD (only if kubeconfig exists)
 - name: Install ArgoCD
   ansible.builtin.command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
+  when: kubeconfig.stat.exists

@@ -1,18 +1,29 @@
 ---
+# 0. Enable IPv4 forwarding (preflight requirement)
+- name: Enable IPv4 forwarding
+  ansible.builtin.sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    reload: yes
+
+# 1. Initialize Kubernetes master
 - name: Initialize Kubernetes master
   ansible.builtin.command: kubeadm init --pod-network-cidr=192.168.0.0/16
   args:
     creates: /etc/kubernetes/admin.conf
   register: kubeadm_init
 
-- name: Save join command template
-  ansible.builtin.template:
-    src: kubeadm_join.sh.j2
-    dest: /tmp/kubeadm_join.sh
+# 2. Ensure .kube directory for vagrant
+- name: Ensure vagrant .kube directory exists
+  ansible.builtin.file:
+    path: /home/vagrant/.kube
+    state: directory
+    owner: vagrant
+    group: vagrant
     mode: '0755'
-  vars:
-    kubeadm_init_command: "{{ kubeadm_init.stdout_lines | select('search','kubeadm join') | list | first }}"
 
+# 3. Copy kubeconfig for vagrant
 - name: Copy kubeconfig for vagrant user
   ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
@@ -21,7 +32,33 @@
     group: vagrant
     remote_src: yes
 
+# 4. Copy kubeconfig for root (needed for Calico install)
+- name: Ensure root .kube directory exists
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0755'
+
+- name: Copy admin kubeconfig to root
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: yes
+    mode: '0644'
+
+# 5. Save join command template
+- name: Save join command template
+  ansible.builtin.template:
+    src: kubeadm_join.sh.j2
+    dest: /tmp/kubeadm_join.sh
+    mode: '0755'
+  vars:
+    kubeadm_init_command: >-
+      {{ (kubeadm_init.stdout_lines | select('search','kubeadm join') | list | first) | default('echo "join command not found"') }}
+
+# 6. Install Calico CNI
 - name: Install Calico CNI
   ansible.builtin.command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  become: yes
   environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
+    KUBECONFIG: /root/.kube/config

@@ -1,12 +1,38 @@
-- name: Add Kubernetes apt key
-  ansible.builtin.apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    state: present
+---
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
 
-- name: Add Kubernetes apt repo (Ubuntu release specific)
-  ansible.builtin.apt_repository:
-    repo: "deb https://apt.kubernetes.io/ kubernetes-{{ ansible_distribution_release }} main"
+- name: Ensure gnupg installed
+  ansible.builtin.apt:
+    name: gnupg
     state: present
+    update_cache: yes
+
+- name: Download Kubernetes Release.key
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key
+    dest: /tmp/kubernetes-release.key
+    mode: '0644'
+
+- name: Convert ASCII key to binary keyring (dearmor)
+  ansible.builtin.command: >
+    gpg --dearmor --yes --output /etc/apt/keyrings/kubernetes.gpg /tmp/kubernetes-release.key
+  args:
+    creates: /etc/apt/keyrings/kubernetes.gpg
+
+- name: Add Kubernetes apt repository list
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    content: |
+      deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
+    mode: '0644'
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
 
 - name: Install Kubernetes components
   ansible.builtin.apt:
@@ -15,4 +41,8 @@
       - kubelet
       - kubectl
     state: present
-    update_cache: yes
+
+- name: Clean temporary key file
+  ansible.builtin.file:
+    path: /tmp/kubernetes-release.key
+    state: absent

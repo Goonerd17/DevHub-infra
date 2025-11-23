@@ -6,25 +6,33 @@
     dest: /tmp/helm.tar.gz
     mode: '0644'
 
-- name: Extract Helm
+- name: Extract Helm binary
   ansible.builtin.unarchive:
     src: /tmp/helm.tar.gz
-    dest: /usr/local/bin/
+    dest: /tmp/
     remote_src: yes
-    extra_opts: [--strip-components=1]
-  args:
-    creates: /usr/local/bin/helm
+    creates: /tmp/linux-amd64/helm   # 이미 풀려있으면 스킵
 
-- name: Ensure helm is executable
-  ansible.builtin.file:
-    path: /usr/local/bin/helm
+- name: Move Helm to /usr/local/bin
+  ansible.builtin.copy:
+    src: /tmp/linux-amd64/helm
+    dest: /usr/local/bin/helm
+    remote_src: yes
     mode: '0755'
 
 # 1. Add Helm repo
 - name: Add Prometheus Helm repo
-  ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  ansible.builtin.command: >
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
   args:
-    creates: /tmp/prometheus_repo_added
+    creates: /usr/local/bin/.prometheus_repo_added
+  register: helm_add_repo_result
+
+- name: Mark repo added
+  ansible.builtin.file:
+    path: /usr/local/bin/.prometheus_repo_added
+    state: touch
+  when: helm_add_repo_result is changed
 
 # 2. Update Helm repos
 - name: Update Helm repos
@@ -36,4 +44,11 @@
     helm install monitoring prometheus-community/kube-prometheus-stack
     --namespace monitoring --create-namespace
   args:
-    creates: /tmp/monitoring_installed
+    creates: /usr/local/bin/.monitoring_installed
+  register: helm_install_result
+
+- name: Mark monitoring installed
+  ansible.builtin.file:
+    path: /usr/local/bin/.monitoring_installed
+    state: touch
+  when: helm_install_result is changed

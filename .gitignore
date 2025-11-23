@@ -1,3 +1,4 @@
 /script/backup/
 /script/cicd.sh
 /script/deploy.sh
+/infra/vagrant/.vagrant/

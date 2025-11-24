@@ -1,17 +1,25 @@
----
-- name: Copy join script from master
+# -----------------------------------------
+# 1. Join script 가져오기 (master → WSL)
+# -----------------------------------------
+- name: Fetch join script from master to control node
   ansible.builtin.fetch:
     src: /tmp/kubeadm_join.sh
     dest: /tmp/kubeadm_join.sh
     flat: yes
   delegate_to: devhub-masternode01
-  ignore_errors: yes  # master에 스크립트 없으면 에러 무시
+  run_once: true
 
-- name: Check if join script exists
-  ansible.builtin.stat:
-    path: /tmp/kubeadm_join.sh
-  register: join_script
+# -----------------------------------------
+# 2. Join script control node → worker 복사
+# -----------------------------------------
+- name: Copy join script to worker node
+  ansible.builtin.copy:
+    src: /tmp/kubeadm_join.sh
+    dest: /tmp/kubeadm_join.sh
+    mode: '0700'
 
+# -----------------------------------------
+# 3. worker에서 join 실행
+# -----------------------------------------
 - name: Run kubeadm join on worker
   ansible.builtin.command: bash /tmp/kubeadm_join.sh
-  when: join_script.stat.exists

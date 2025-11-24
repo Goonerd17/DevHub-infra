@@ -1,7 +1,31 @@
-- name: Clean SSH known_hosts
+- name: Prepare Vagrant SSH keys in WSL home
   hosts: localhost
   gather_facts: false
+  vars:
+    src_master_key: /mnt/c/DevHub-infra/infra/vagrant/.vagrant/machines/devhub-masternode01/virtualbox/private_key
+    src_worker_key: /mnt/c/DevHub-infra/infra/vagrant/.vagrant/machines/devhub-workernode01/virtualbox/private_key
+    dst_dir: ~/.ssh/vagrant_keys
   tasks:
+    - name: Ensure destination directory exists
+      ansible.builtin.file:
+        path: "{{ dst_dir }}"
+        state: directory
+        mode: '0700'
+
+    - name: Copy master private key to WSL home
+      ansible.builtin.copy:
+        src: "{{ src_master_key }}"
+        dest: "{{ dst_dir }}/master"
+        mode: '0600'
+        force: yes
+
+    - name: Copy worker private key to WSL home
+      ansible.builtin.copy:
+        src: "{{ src_worker_key }}"
+        dest: "{{ dst_dir }}/worker"
+        mode: '0600'
+        force: yes
+
     - name: Remove old host keys for Vagrant VMs
       ansible.builtin.shell: |
         ssh-keygen -f ~/.ssh/known_hosts -R 192.168.56.10 || true
@@ -10,6 +34,8 @@
 - name: Test connectivity to all nodes
   hosts: all
   gather_facts: false
+  remote_user: vagrant
+  become: yes
   tasks:
     - name: Ping test
       ansible.builtin.ping:

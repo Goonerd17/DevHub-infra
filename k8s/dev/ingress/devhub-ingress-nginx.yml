@@ -92,7 +92,6 @@ spec:
           image: registry.k8s.io/ingress-nginx/controller:v1.13.2
           args:
             - /nginx-ingress-controller
-            - --configmap=$(POD_NAMESPACE)/nginx-configuration
           env:
             - name: POD_NAMESPACE
               valueFrom:

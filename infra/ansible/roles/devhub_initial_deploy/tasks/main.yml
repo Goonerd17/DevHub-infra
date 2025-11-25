@@ -6,7 +6,7 @@
 
 - name: Apply ingress controller
   shell: |
-    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/ingress/devhub-ingress-controller.yml
+    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/ingress/devhub-ingress-nginx.yml
 
 - name: Apply backend namespace
   shell: |

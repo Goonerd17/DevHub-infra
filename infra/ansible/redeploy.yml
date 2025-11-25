@@ -1,0 +1,8 @@
+---
+- name: Redeploy DevHub Apps
+  hosts: devhub-masternode01
+  become: yes
+  vars:
+    target_env: "{{ target_env | default('dev') }}"
+  roles:
+    - devhub_redeploy

@@ -28,7 +28,7 @@ metadata:
   name: nginx-ingress-clusterrole
 rules:
   - apiGroups: [""]
-    resources: ["configmaps", "endpoints", "nodes", "pods", "secrets", "services"]
+    resources: ["endpoints", "nodes", "pods", "secrets", "services"]
     verbs: ["list", "watch"]
   - apiGroups: ["extensions", "networking.k8s.io"]
     resources: ["ingresses", "ingressclasses"]
@@ -63,8 +63,8 @@ metadata:
   name: nginx-configuration
   namespace: ingress-nginx
 data:
-  use-proxy-protocol: "false"
   controller-class: "nginx"
+  use-proxy-protocol: "false"
 
 ---
 
@@ -92,6 +92,7 @@ spec:
           image: registry.k8s.io/ingress-nginx/controller:v1.13.2
           args:
             - /nginx-ingress-controller
+            - --configmap=$(POD_NAMESPACE)/nginx-configuration
           env:
             - name: POD_NAMESPACE
               valueFrom:

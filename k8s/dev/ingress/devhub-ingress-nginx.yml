@@ -63,6 +63,7 @@ metadata:
   name: nginx-configuration
   namespace: ingress-nginx
 data:
+  use-proxy-protocol: "false"
   controller-class: "nginx"
 
 ---

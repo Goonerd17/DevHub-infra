@@ -22,4 +22,4 @@
 
 - name: Delete ingress controller
   shell: |
-    kubectl delete -f /tmp/devhub-infra/k8s/{{ target_env }}/ingress/devhub-ingress-nginx.yml --ignore-not-found
+    kubectl delete -f /tmp/devhub-infra/k8s/{{ target_env }}/ingress/devhub-ingress-controller.yml --ignore-not-found

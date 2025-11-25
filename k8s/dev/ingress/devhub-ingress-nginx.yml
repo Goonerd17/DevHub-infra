@@ -62,7 +62,8 @@ kind: ConfigMap
 metadata:
   name: nginx-configuration
   namespace: ingress-nginx
-data: {}
+data:
+  controller-class: "nginx"
 
 ---
 

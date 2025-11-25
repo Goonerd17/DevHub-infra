@@ -1,0 +1,25 @@
+- name: Clone DevHub-infra repo
+  ansible.builtin.git:
+    repo: https://github.com/Goonerd17/DevHub-infra.git
+    dest: /tmp/devhub-infra
+    version: main
+
+- name: Apply ingress controller
+  shell: |
+    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/ingress/devhub-ingress-controller.yml
+
+- name: Apply backend namespace
+  shell: |
+    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/devhub-backend/namespace.yml
+
+- name: Apply backend deployment
+  shell: |
+    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/devhub-backend/deployment.yml
+
+- name: Apply frontend namespace
+  shell: |
+    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/devhub-frontend/namespace.yml
+
+- name: Apply frontend deployment
+  shell: |
+    kubectl apply -f /tmp/devhub-infra/k8s/{{ target_env }}/devhub-frontend/deployment.yml

@@ -1,0 +1,18 @@
+- name: Get OutOfSync applications
+  shell: |
+    argocd app list --output json \
+      | jq -r '.[] | select(.status=="OutOfSync") | .name'
+  register: outofsync_apps
+
+- name: Show OutOfSync apps
+  debug:
+    msg: "{{ outofsync_apps.stdout_lines }}"
+
+- name: Sync OutOfSync apps
+  when: outofsync_apps.stdout_lines | length > 0
+  loop: "{{ outofsync_apps.stdout_lines }}"
+  loop_control:
+    loop_var: app
+  shell: |
+    argocd app sync {{ app }} --grpc-web
+    argocd app wait {{ app }} --timeout 180

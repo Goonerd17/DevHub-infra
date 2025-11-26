@@ -20,4 +20,4 @@ spec:
             - containerPort: 80
           env:
             - name: API_BASE
-              value: http://devhub-backend.devhub-backend-dev.svc.cluster.local:8080/v1
+              value: http://devhub.local/v1

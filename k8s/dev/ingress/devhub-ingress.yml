@@ -3,8 +3,8 @@ kind: Ingress
 metadata:
   name: devhub-ingress-dev
   namespace: devhub-frontend-dev
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - host: devhub.local

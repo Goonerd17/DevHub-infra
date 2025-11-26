@@ -134,7 +134,7 @@ metadata:
   name: ingress-nginx
   namespace: ingress-nginx
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: nginx-ingress
   ports:

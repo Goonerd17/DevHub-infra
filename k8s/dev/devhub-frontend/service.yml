@@ -19,3 +19,5 @@ metadata:
 spec:
   type: ExternalName
   externalName: devhub-backend.devhub-backend-dev.svc.cluster.local
+  ports:
+    - port: 8080

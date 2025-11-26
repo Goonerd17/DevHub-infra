@@ -18,7 +18,6 @@ metadata:
   namespace: ingress-nginx
 
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -61,6 +60,13 @@ rules:
       - list
       - watch
   - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+      - patch
+  - apiGroups:
       - coordination.k8s.io
     resources:
       - leases
@@ -88,7 +94,6 @@ roleRef:
 
 
 ---
-
 # ========================================
 # ConfigMap
 # ========================================

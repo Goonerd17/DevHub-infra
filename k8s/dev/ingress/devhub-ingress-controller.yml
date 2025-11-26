@@ -36,7 +36,11 @@ rules:
   - apiGroups: [""]
     resources:
       - events
+      - pods
     verbs:
+      - get
+      - list
+      - watch
       - create
       - patch
 ---

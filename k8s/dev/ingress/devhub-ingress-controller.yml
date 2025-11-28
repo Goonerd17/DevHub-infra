@@ -1,6 +1,8 @@
-# ========================================
+---
+
+# ===============================
 # Namespace
-# ========================================
+# ===============================
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -8,9 +10,9 @@ metadata:
 
 ---
 
-# ========================================
+# ===============================
 # ServiceAccount
-# ========================================
+# ===============================
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -19,75 +21,38 @@ metadata:
 
 ---
 
-# ========================================
+# ===============================
 # ClusterRole
-# ========================================
+# ===============================
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: ingress-nginx
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-      - endpoints
-      - nodes
-      - pods
-      - secrets
-      - services
-    verbs:
-      - list
-      - watch
-      - get
-  - apiGroups:
-      - ""
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-  - apiGroups:
-      - discovery.k8s.io
-    resources:
-      - endpointslices
-    verbs:
-      - list
-      - watch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses
-      - ingressclasses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses/status
-    verbs:
-      - update
-      - patch
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
+  - apiGroups: [""]
+    resources: ["configmaps","endpoints","nodes","pods","secrets","services"]
+    verbs: ["list","watch","get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create","patch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["list","watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses","ingressclasses"]
+    verbs: ["get","list","watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses/status"]
+    verbs: ["update","patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get","list","watch","create","update","patch","delete"]
 
 ---
 
-# ========================================
+# ===============================
 # ClusterRoleBinding
-# ========================================
+# ===============================
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -103,9 +68,9 @@ roleRef:
 
 ---
 
-# ========================================
+# ===============================
 # ConfigMap
-# ========================================
+# ===============================
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -116,21 +81,21 @@ data:
 
 ---
 
-# ========================================
-# IngressClass (중요)
-# ========================================
+# ===============================
+# IngressClass
+# ===============================
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   name: nginx
 spec:
-  controller: nginx.org/ingress-controller
+  controller: k8s.io/ingress-nginx
 
 ---
 
-# ========================================
-# Deployment
-# ========================================
+# ===============================
+# Ingress Controller Deployment
+# ===============================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -153,7 +118,7 @@ spec:
           args:
             - /nginx-ingress-controller
             - --ingress-class=nginx
-            - --controller-class=nginx
+            - --controller-class=k8s.io/ingress-nginx
             - --configmap=$(POD_NAMESPACE)/nginx-configuration
           env:
             - name: POD_NAMESPACE
@@ -170,9 +135,9 @@ spec:
 
 ---
 
-# ========================================
-# Service (NodePort)
-# ========================================
+# ===============================
+# Ingress Controller Service
+# ===============================
 apiVersion: v1
 kind: Service
 metadata:

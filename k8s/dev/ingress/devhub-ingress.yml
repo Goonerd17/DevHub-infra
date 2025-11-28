@@ -1,28 +1,31 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: devhub-ingress-dev
+  name: devhub-ingress
   namespace: devhub-frontend-dev
   annotations:
-    nginx.ingress.kubernetes.io/upstream-vhost: devhub-backend.devhub-backend-dev.svc.cluster.local
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      try_files $uri $uri/ /index.html;
 spec:
-  ingressClassName: nginx
   rules:
     - host: devhub.local
       http:
         paths:
-          - path: /v1
-            pathType: Prefix
-            backend:
-              service:
-                name: devhub-backend
-                port:
-                  number: 8080
-          - path: /
+          # Frontend root path catch-all
+          - path: /(.*)
             pathType: Prefix
             backend:
               service:
                 name: devhub-frontend
                 port:
                   number: 80
+          # Backend API path
+          - path: /v1(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: devhub-backend
+                port:
+                  number: 8080

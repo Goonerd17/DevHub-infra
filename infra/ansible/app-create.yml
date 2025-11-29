@@ -1,0 +1,124 @@
+- name: Setup ArgoCD application auto-registration
+  hosts: master
+  become: yes
+
+  vars:
+    repo_url: "https://github.com/Goonerd17/DevHub-infra.git"
+    port_forward_local: 32394
+    apps:
+      - name: devhub-frontend-dev
+        path: k8s/dev/devhub-frontend
+        namespace: devhub-frontend-dev
+
+      - name: devhub-backend-dev
+        path: k8s/dev/devhub-backend
+        namespace: devhub-backend-dev
+
+      - name: ingress-nginx-controller
+        path: k8s/dev/ingress
+        namespace: ingress-nginx
+
+      - name: ingress-nginx
+        path: k8s/dev/ingress
+        namespace: devhub-frontend-dev
+
+  tasks:
+
+    # ------------------------------
+    # 0. 포트포워딩 이미 실행 중인지 확인
+    # ------------------------------
+    - name: Check if ArgoCD port-forward is running
+      shell: "pgrep -f 'kubectl.*port-forward.*argocd-server.*{{ port_forward_local }}:443'"
+      register: port_forward_check
+      ignore_errors: yes
+
+    - name: Start ArgoCD server port-forward if not running
+      shell: "nohup kubectl -n argocd port-forward svc/argocd-server {{ port_forward_local }}:443 >/dev/null 2>&1 &"
+      when: port_forward_check.rc != 0
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+
+    - name: Wait a moment for port-forward to be ready
+      pause:
+        seconds: 2
+
+    # ------------------------------
+    # 1. 기본 패키지 설치
+    # ------------------------------
+    - name: Install required packages
+      apt:
+        name:
+          - jq
+          - curl
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    # ------------------------------
+    # 2. Kubernetes python 라이브러리 설치
+    # ------------------------------
+    - name: Install kubernetes python module
+      pip:
+        name: kubernetes
+        executable: pip3
+
+    # ------------------------------
+    # 3. kubeconfig 확인
+    # ------------------------------
+    - name: Ensure admin.conf exists
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: kubeconfig
+
+    - name: Fail if kubeconfig missing
+      fail:
+        msg: "/etc/kubernetes/admin.conf NOT FOUND"
+      when: not kubeconfig.stat.exists
+
+    # ------------------------------
+    # 4. ArgoCD 초기 admin 패스워드 가져오기
+    # ------------------------------
+    - name: Get ArgoCD admin password from secret
+      shell: |
+        kubectl -n argocd get secret argocd-initial-admin-secret \
+          -o jsonpath="{.data.password}" | base64 -d
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: argocd_admin_password
+
+    # ------------------------------
+    # 5. ArgoCD 로그인 (idempotent)
+    # ------------------------------
+    - name: Login to ArgoCD if not already logged in
+      shell: |
+        if ! argocd context get {{ ansible_host }}:{{ port_forward_local }} >/dev/null 2>&1; then
+          argocd login {{ ansible_host }}:{{ port_forward_local }} \
+            --username admin \
+            --password "{{ argocd_admin_password.stdout }}" \
+            --insecure --grpc-web
+        fi
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+
+    # ------------------------------
+    # 6. ArgoCD 앱 등록 (idempotent, 자동 동기화 없음)
+    # ------------------------------
+    - name: Register ArgoCD Applications
+      loop: "{{ apps }}"
+      loop_control:
+        loop_var: app
+      shell: |
+        if argocd app get {{ app.name }} > /dev/null 2>&1; then
+          echo "App {{ app.name }} already exists → skip"
+        else
+          argocd app create {{ app.name }} \
+            --repo {{ repo_url }} \
+            --path {{ app.path }} \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace {{ app.namespace }} \
+            --sync-policy none \
+            --sync-option CreateNamespace=true \
+            --grpc-web
+        fi
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf

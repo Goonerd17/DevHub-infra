@@ -1,8 +1,23 @@
+---
+# 1. Python3-pip 설치 (Debian/RedHat 공용)
+- name: Ensure python3-pip is installed
+  package:
+    name: python3-pip
+    state: present
+
+# 2. Kubernetes Python 라이브러리 설치
+- name: Ensure kubernetes Python module is installed
+  pip:
+    name: kubernetes
+    executable: pip3
+
+# 3. kubeconfig 확인
 - name: Check if kubeconfig exists
   ansible.builtin.stat:
     path: /etc/kubernetes/admin.conf
   register: kubeconfig
 
+# 4. ArgoCD 네임스페이스 생성
 - name: Create ArgoCD namespace if not exists
   ansible.builtin.k8s:
     state: present
@@ -11,18 +26,16 @@
     kubeconfig: /etc/kubernetes/admin.conf
   when: kubeconfig.stat.exists
 
-- name: Apply ArgoCD CRDs
-  ansible.builtin.command: kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds.yaml -n argocd
+# 5. ArgoCD 설치 (install.yaml만 적용)
+- name: Apply ArgoCD manifests
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    -n argocd
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
   when: kubeconfig.stat.exists
 
-- name: Apply ArgoCD main manifests
-  ansible.builtin.command: kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml -n argocd
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
-  when: kubeconfig.stat.exists
-
+# 6. argocd-server 준비 확인
 - name: Wait for argocd-server deployment ready
   ansible.builtin.k8s_info:
     api_version: apps/v1
@@ -35,6 +48,7 @@
   delay: 15
   when: kubeconfig.stat.exists
 
+# 7. ArgoCD CLI 설치
 - name: Install ArgoCD CLI if not present
   ansible.builtin.get_url:
     url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64

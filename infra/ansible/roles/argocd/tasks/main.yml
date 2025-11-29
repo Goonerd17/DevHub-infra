@@ -1,21 +1,43 @@
----
-# 1. Ensure kubeconfig exists
 - name: Check if kubeconfig exists
   ansible.builtin.stat:
     path: /etc/kubernetes/admin.conf
   register: kubeconfig
 
-# 2. Create ArgoCD namespace (only if kubeconfig exists)
-- name: Create ArgoCD namespace
-  ansible.builtin.command: kubectl create ns argocd
-  environment:
-    KUBECONFIG: /etc/kubernetes/admin.conf
+- name: Create ArgoCD namespace if not exists
+  ansible.builtin.k8s:
+    state: present
+    kind: Namespace
+    name: argocd
+    kubeconfig: /etc/kubernetes/admin.conf
   when: kubeconfig.stat.exists
-  ignore_errors: yes  # 이미 존재하면 무시
 
-# 3. Install ArgoCD (only if kubeconfig exists)
-- name: Install ArgoCD
-  ansible.builtin.command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+- name: Apply ArgoCD CRDs
+  ansible.builtin.command: kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds.yaml -n argocd
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
   when: kubeconfig.stat.exists
+
+- name: Apply ArgoCD main manifests
+  ansible.builtin.command: kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml -n argocd
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: kubeconfig.stat.exists
+
+- name: Wait for argocd-server deployment ready
+  ansible.builtin.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: argocd
+    name: argocd-server
+  register: argocd_server
+  until: argocd_server.resources[0].status.availableReplicas|default(0) > 0
+  retries: 20
+  delay: 15
+  when: kubeconfig.stat.exists
+
+- name: Install ArgoCD CLI if not present
+  ansible.builtin.get_url:
+    url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+    dest: /usr/local/bin/argocd
+    mode: '0755'
+  when: ansible_facts['os_family'] in ["Debian", "RedHat"]

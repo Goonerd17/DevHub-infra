@@ -10,7 +10,7 @@
   become: yes
   roles:
     - kubernetes_init
-    - argocd
+#    - argocd
 #    - monitoring
 
 - hosts: devhub-workernode01

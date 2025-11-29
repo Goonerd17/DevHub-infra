@@ -30,23 +30,26 @@ metadata:
   name: ingress-nginx
 rules:
   - apiGroups: [""]
-    resources: ["configmaps","endpoints","nodes","pods","secrets","services"]
-    verbs: ["list","watch","get"]
+    resources: ["configmaps", "endpoints", "nodes", "pods", "secrets", "services"]
+    verbs: ["list", "watch", "get"]
+  - apiGroups: [""]
+    resources: ["services/status"]
+    verbs: ["update"]
   - apiGroups: [""]
     resources: ["events"]
-    verbs: ["create","patch"]
-  - apiGroups: ["discovery.k8s.io"]
-    resources: ["endpointslices"]
-    verbs: ["list","watch"]
+    verbs: ["create", "patch"]
   - apiGroups: ["networking.k8s.io"]
-    resources: ["ingresses","ingressclasses"]
-    verbs: ["get","list","watch"]
+    resources: ["ingresses", "ingressclasses"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["networking.k8s.io"]
     resources: ["ingresses/status"]
-    verbs: ["update","patch"]
+    verbs: ["update", "patch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["list", "watch"]
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
-    verbs: ["get","list","watch","create","update","patch","delete"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
 ---
 
@@ -132,8 +135,10 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
           ports:
-            - containerPort: 80
-            - containerPort: 443
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
 
 ---
 

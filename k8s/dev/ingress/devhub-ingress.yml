@@ -12,7 +12,7 @@ spec:
     - host: devhub.local
       http:
         paths:
-          - path: /v1
+          - path: /guestbook
             pathType: Prefix
             backend:
               service:

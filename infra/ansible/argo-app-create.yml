@@ -1,0 +1,24 @@
+- hosts: master
+  become: yes
+  vars:
+    repo_url: "https://github.com/Goonerd17/DevHub-infra.git"
+    port_forward_local: 32394
+    apps:
+      - name: devhub-frontend-dev
+        path: k8s/dev/devhub-frontend
+        namespace: devhub-frontend-dev
+
+      - name: devhub-backend-dev
+        path: k8s/dev/devhub-backend
+        namespace: devhub-backend-dev
+
+      - name: ingress-nginx-controller
+        path: k8s/dev/ingress
+        namespace: ingress-nginx
+
+      - name: ingress-nginx
+        path: k8s/dev/ingress
+        namespace: devhub-frontend-dev
+  roles:
+    - arge_app_create
+

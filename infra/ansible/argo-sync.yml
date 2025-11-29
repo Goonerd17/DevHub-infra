@@ -3,4 +3,4 @@
   vars:
     target_env: "{{ target_env | default('dev') }}"
   roles:
-    - devhub_sync
+    - argo_sync

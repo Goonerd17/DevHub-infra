@@ -3,4 +3,4 @@
   vars:
     target_env: "{{ target_env | default('dev') }}"
   roles:
-    - argocd
+    - argo_install

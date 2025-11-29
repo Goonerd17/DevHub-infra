@@ -110,6 +110,8 @@ spec:
     metadata:
       labels:
         app: ingress-nginx
+      annotations:
+        kubernetes.io/change-cause: "stable-after-minikube-restart"
     spec:
       serviceAccountName: ingress-nginx
       containers:
